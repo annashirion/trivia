@@ -1,22 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './Homepage.css'
 import ActionSection from './components/ActionSection'
-
-interface Topic {
-  id: string
-  name: string
-  icon: string
-  description: string
-}
-
-const topics: Topic[] = [
-  { id: 'science', name: 'Science', icon: '🔬', description: 'Physics, chemistry, biology and more' },
-  { id: 'history', name: 'History', icon: '🏛️', description: 'World history and historical events' },
-  { id: 'sports', name: 'Sports', icon: '⚽', description: 'Athletics, teams, and sporting events' },
-  { id: 'geography', name: 'Geography', icon: '🌍', description: 'Countries, capitals, and landmarks' },
-  { id: 'movies', name: 'Movies & TV', icon: '🎬', description: 'Films, shows, and entertainment' },
-  { id: 'music', name: 'Music', icon: '🎵', description: 'Artists, songs, and musical genres' }
-]
+import type { Topic } from './types'
 
 interface HomepageProps {
   onStart: () => void
@@ -27,6 +12,27 @@ interface HomepageProps {
 function Homepage({ onStart, loading, error }: HomepageProps) {
   const [gameStarted, setGameStarted] = useState(false)
   const [selectedTopics, setSelectedTopics] = useState<string[]>([])
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [topicsLoading, setTopicsLoading] = useState(true)
+  const [topicsError, setTopicsError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const API_BASE = (import.meta as any).env.VITE_API_URL || `http://localhost:${(import.meta as any).env.VITE_API_PORT || 4000}`
+        const res = await fetch(`${API_BASE}/api/topics`)
+        if (!res.ok) throw new Error('Failed to fetch topics')
+        const data: Topic[] = await res.json()
+        setTopics(data)
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Unknown error'
+        setTopicsError(message)
+      } finally {
+        setTopicsLoading(false)
+      }
+    }
+    fetchTopics()
+  }, [])
 
   const toggleTopic = (topicId: string) => {
     setSelectedTopics(prev => 
@@ -56,6 +62,24 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
         <button onClick={() => setGameStarted(false)} className="btn btn-secondary">
           Back to Home
         </button>
+      </div>
+    )
+  }
+
+  if (topicsLoading) {
+    return (
+      <div className="home-container">
+        <h1 className="topics-title">Just Another Trivia</h1>
+        <p>Loading topics...</p>
+      </div>
+    )
+  }
+
+  if (topicsError) {
+    return (
+      <div className="home-container">
+        <h1 className="topics-title">Just Another Trivia</h1>
+        <p className="helper-text-error">{topicsError}</p>
       </div>
     )
   }
