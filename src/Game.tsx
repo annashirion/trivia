@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import './Game.css'
 import ActionSection from './components/ActionSection'
+import OptionsGrid from './components/OptionsGrid'
 
 interface Question {
   id: number
@@ -56,37 +57,13 @@ function Game({ questions, onBack }: GameProps) {
       </div>
       <h2 className="game-question">{currentQuestion.question}</h2>
 
-      <div className="options-grid">
-        {currentQuestion.options.map((opt, idx) => {
-          const isSelected = idx === selectedIndex
-          const isCorrect = idx === currentQuestion.correctIndex
-          const showState = answered
-
-          let cardClass = 'option-card'
-          if (showState) {
-            if (isCorrect) cardClass += ' correct'
-            if (isSelected) cardClass += ' selected'
-            if (isSelected && !isCorrect) cardClass += ' wrong'
-          } else if (isSelected) {
-            cardClass += ' preview-selected'
-          }
-
-          return (
-            <div
-              key={idx}
-              role="button"
-              tabIndex={0}
-              onClick={() => handleSelect(idx)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleSelect(idx)
-              }}
-              className={`${cardClass} ${answered ? 'disabled' : ''}`}
-            >
-              <div className="option-text">{opt}</div>
-            </div>
-          )
-        })}
-      </div>
+      <OptionsGrid
+        options={currentQuestion.options}
+        selectedIndex={selectedIndex}
+        correctIndex={currentQuestion.correctIndex}
+        answered={answered}
+        onSelect={handleSelect}
+      />
 
       <ActionSection 
         label={isLast ? 'Go to Home' : 'Next'}
