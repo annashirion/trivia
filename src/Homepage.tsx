@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Homepage.css'
 import ActionSection from './components/ActionSection'
+import TopicCard from './components/TopicCard'
 import type { Topic } from './types'
 
 interface HomepageProps {
@@ -90,18 +91,12 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
         <h1 className="topics-title">Just Another Trivia</h1>
         <div className="topics-grid">
           {topics.map(topic => (
-            <div 
+            <TopicCard
               key={topic.id}
-              className={`topic-card ${selectedTopics.includes(topic.id) ? 'selected' : ''}`}
-              onClick={() => toggleTopic(topic.id)}
-            >
-              <div className="topic-icon">{topic.icon}</div>
-              <h3 className="topic-name">{topic.name}</h3>
-              <p className="topic-description">{topic.description}</p>
-              {selectedTopics.includes(topic.id) && (
-                <div className="selected-indicator">✓</div>
-              )}
-            </div>
+              topic={topic}
+              isSelected={selectedTopics.includes(topic.id)}
+              onToggle={toggleTopic}
+            />
           ))}
         </div>
       </div>
