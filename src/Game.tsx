@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import './Game.css'
+import ActionSection from './components/ActionSection'
 
 interface Question {
   id: number
@@ -17,7 +18,6 @@ function Game({ questions, onBack }: GameProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [answered, setAnswered] = useState(false)
-  const [score, setScore] = useState(0)
 
   const currentQuestion = useMemo(() => questions[currentIndex], [questions, currentIndex])
   const isLast = currentIndex === questions.length - 1
@@ -26,9 +26,6 @@ function Game({ questions, onBack }: GameProps) {
     if (answered) return
     setSelectedIndex(idx)
     setAnswered(true)
-    if (idx === currentQuestion.correctIndex) {
-      setScore(prev => prev + 1)
-    }
   }
 
   const handleNext = () => {
@@ -91,18 +88,13 @@ function Game({ questions, onBack }: GameProps) {
         })}
       </div>
 
-      <div className="action-section">
-        <button 
-          onClick={isLast ? handleFinish : handleNext}
-          className={`btn ${answered ? 'btn-primary' : 'btn-disabled'}`}
-          disabled={!answered}
-        >
-          {isLast ? 'Go to Home' : 'Next'}
-        </button>
-        <p className={`helper-text ${answered ? 'hidden' : 'visible'}`}>
-          Choose an answer to continue
-        </p>
-      </div>
+      <ActionSection 
+        label={isLast ? 'Go to Home' : 'Next'}
+        onClick={isLast ? handleFinish : handleNext}
+        enabled={answered}
+        helperText="Choose an answer to continue"
+        helperVisible={!answered}
+      />
     </div>
   )
 }

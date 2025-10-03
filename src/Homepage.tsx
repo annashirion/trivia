@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './Homepage.css'
+import ActionSection from './components/ActionSection'
 
 interface Topic {
   id: string
@@ -81,23 +82,15 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
         </div>
       </div>
       
-      <div className="action-section">
-        <button 
-          onClick={startGame}
-          className={`btn ${selectedTopics.length > 0 ? 'btn-primary' : 'btn-disabled'}`}
-          disabled={selectedTopics.length === 0 || loading}
-        >
-          {loading ? 'Loading…' : 'Start Playing'}
-        </button>
-        <p className={`helper-text ${selectedTopics.length === 0 ? 'visible' : 'hidden'}`}>
-          Select at least one topic
-        </p>
-        {error && (
-          <p className="helper-text visible" style={{ color: '#ff6b6b', marginTop: 8 }}>
-            {error}
-          </p>
-        )}
-      </div>
+      <ActionSection 
+        label="Start Playing"
+        onClick={startGame}
+        enabled={selectedTopics.length > 0}
+        loading={loading}
+        helperText="Select at least one topic"
+        helperVisible={selectedTopics.length === 0}
+        error={error}
+      />
     </div>
   )
 }
