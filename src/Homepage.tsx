@@ -17,7 +17,13 @@ const topics: Topic[] = [
   { id: 'music', name: 'Music', icon: '🎵', description: 'Artists, songs, and musical genres' }
 ]
 
-function Homepage() {
+interface HomepageProps {
+  onStart: () => void
+  loading?: boolean
+  error?: string | null
+}
+
+function Homepage({ onStart, loading, error }: HomepageProps) {
   const [gameStarted, setGameStarted] = useState(false)
   const [selectedTopics, setSelectedTopics] = useState<string[]>([])
 
@@ -29,10 +35,10 @@ function Homepage() {
     )
   }
 
-  const startGame = () => {
-    if (selectedTopics.length > 0) {
-      setGameStarted(true)
-    }
+  const startGame = async () => {
+    if (selectedTopics.length === 0 || loading) return
+    await onStart()
+    setGameStarted(true)
   }
 
   if (gameStarted) {
@@ -78,15 +84,20 @@ function Homepage() {
       <div className="action-section">
         <button 
           id="start-game-btn"
-          onClick={startGame} 
+          onClick={startGame}
           className={`btn ${selectedTopics.length > 0 ? 'btn-primary' : 'btn-disabled'}`}
-          disabled={selectedTopics.length === 0}
+          disabled={selectedTopics.length === 0 || loading}
         >
-          Start Playing
+          {loading ? 'Loading…' : 'Start Playing'}
         </button>
         <p className={`helper-text ${selectedTopics.length === 0 ? 'visible' : 'hidden'}`}>
           Select at least one topic
         </p>
+        {error && (
+          <p className="helper-text visible" style={{ color: '#ff6b6b', marginTop: 8 }}>
+            {error}
+          </p>
+        )}
       </div>
     </div>
   )
