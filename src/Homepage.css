@@ -36,67 +36,6 @@
   width: 100%;
 }
 
-.topic-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgb(52, 152, 219);
-  border-radius: 20px;
-  padding: 1.5rem;
-  text-align: center;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  position: relative;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
-}
-
-.topic-card:hover {
-  box-shadow: 0 15px 30px rgba(52, 152, 219, 0.3);
-}
-
-.topic-card.selected {
-  border-color: rgb(46, 183, 204);
-  box-shadow: 0 15px 30px rgba(46, 183, 204, 0.3);
-}
-
-.topic-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.topic-name {
-  font-size: 1.3rem;
-  margin: 0 0 0.5rem 0;
-  font-weight: 600;
-  color: rgb(52, 152, 219);
-}
-
-.topic-description {
-  margin: 0;
-  opacity: 0.8;
-  line-height: 1.4;
-  font-size: 0.9rem;
-  color: rgb(52, 152, 219);
-}
-
-.selected-indicator {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: rgb(46, 183, 204);
-  color: white;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
 
 /* Action Section */
 .action-section {
@@ -217,33 +156,6 @@
     gap: 0.6rem;
   }
   
-  .topic-card {
-    min-height: 80px;
-    padding: 0.5rem 0.3rem;
-    aspect-ratio: 2;
-  }
-  
-  .topic-icon {
-    font-size: 1.3rem;
-    margin-bottom: 0.3rem;
-  }
-  
-  .topic-name {
-    font-size: 0.8rem;
-    margin: 0;
-  }
-  
-  .topic-description {
-    display: none; /* Hide description on mobile to save space */
-  }
-  
-  .selected-indicator {
-    width: 18px;
-    height: 18px;
-    font-size: 0.8rem;
-    top: 0.3rem;
-    right: 0.3rem;
-  }
   
   .action-section {
     display: flex;
@@ -281,27 +193,6 @@
     gap: 0.5rem;
   }
   
-  .topic-card {
-    min-height: 70px;
-    padding: 0.4rem 0.2rem;
-  }
-  
-  .topic-icon {
-    font-size: 1.1rem;
-    margin-bottom: 0.2rem;
-  }
-  
-  .topic-name {
-    font-size: 0.7rem;
-  }
-  
-  .selected-indicator {
-    width: 16px;
-    height: 16px;
-    font-size: 0.7rem;
-    top: 0.2rem;
-    right: 0.2rem;
-  }
   
   .btn {
     max-width: 260px;
