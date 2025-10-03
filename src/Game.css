@@ -1,0 +1,69 @@
+.game-meta {
+  margin-bottom: 8px;
+  color: #8a8f98;
+}
+
+.game-question {
+  margin-bottom: 16px;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.option-card {
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #e3e8f0;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, border 120ms ease;
+  outline: none;
+}
+
+.option-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.option-card.disabled {
+  cursor: default;
+}
+
+.option-card .option-text {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.option-card.preview-selected {
+  background: #f5f7fb;
+  border: 1px solid #cfd6e4;
+}
+
+.option-card.correct {
+  background: #f1fff5;
+  border: 1px solid #a3e6b1;
+}
+
+.option-card.selected.correct {
+  background: #e6ffed;
+  border: 1px solid #2ecc71;
+}
+
+.option-card.selected.wrong {
+  background: #ffecec;
+  border: 1px solid #ff6b6b;
+}
+
+.game-controls {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+

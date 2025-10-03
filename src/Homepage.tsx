@@ -83,7 +83,6 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
       
       <div className="action-section">
         <button 
-          id="start-game-btn"
           onClick={startGame}
           className={`btn ${selectedTopics.length > 0 ? 'btn-primary' : 'btn-disabled'}`}
           disabled={selectedTopics.length === 0 || loading}
