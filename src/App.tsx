@@ -2,13 +2,7 @@ import './App.css'
 import { useState } from 'react'
 import Homepage from './Homepage'
 import Game from './Game'
-
-interface Question {
-  id: number
-  question: string
-  options: string[]
-  correctIndex: number
-}
+import type { Question } from './types'
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false)

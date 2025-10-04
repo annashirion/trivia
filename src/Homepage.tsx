@@ -11,7 +11,6 @@ interface HomepageProps {
 }
 
 function Homepage({ onStart, loading, error }: HomepageProps) {
-  const [gameStarted, setGameStarted] = useState(false)
   const [selectedTopics, setSelectedTopics] = useState<string[]>([])
   const [topics, setTopics] = useState<Topic[]>([])
   const [topicsLoading, setTopicsLoading] = useState(true)
@@ -46,25 +45,6 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
   const startGame = async () => {
     if (selectedTopics.length === 0 || loading) return
     await onStart()
-    setGameStarted(true)
-  }
-
-  if (gameStarted) {
-    const selectedTopicNames = topics
-      .filter(topic => selectedTopics.includes(topic.id))
-      .map(topic => topic.name)
-      .join(', ')
-
-    return (
-      <div className="game-container">
-        <h2>Game Started!</h2>
-        <p>Selected topics: <strong>{selectedTopicNames}</strong></p>
-        <p>Trivia game will be implemented here...</p>
-        <button onClick={() => setGameStarted(false)} className="btn btn-secondary">
-          Back to Home
-        </button>
-      </div>
-    )
   }
 
   if (topicsLoading) {
