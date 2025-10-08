@@ -1,20 +1,42 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import './Game.css'
 import ActionSection from './components/ActionSection'
 import OptionsGrid from './components/OptionsGrid'
+import Results from './components/Results'
 import type { Question, AnswerCheck } from './types'
+import { API_BASE } from './utils/api'
 
 interface GameProps {
-  questions: Question[]
   onBack: () => void
 }
 
-function Game({ questions, onBack }: GameProps) {
+function Game({ onBack }: GameProps) {
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [questionsLoading, setQuestionsLoading] = useState(true)
+  const [questionsError, setQuestionsError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [answered, setAnswered] = useState(false)
   const [answerResult, setAnswerResult] = useState<AnswerCheck | null>(null)
   const [checkingAnswer, setCheckingAnswer] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/questions`)
+        if (!res.ok) throw new Error('Failed to fetch questions')
+        const data: Question[] = await res.json()
+        setQuestions(data)
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Unknown error'
+        setQuestionsError(message)
+      } finally {
+        setQuestionsLoading(false)
+      }
+    }
+    fetchQuestions()
+  }, [])
 
   const currentQuestion = useMemo(() => questions[currentIndex], [questions, currentIndex])
   const isLast = currentIndex === questions.length - 1
@@ -26,7 +48,6 @@ function Game({ questions, onBack }: GameProps) {
     setCheckingAnswer(true)
     
     try {
-      const API_BASE = (import.meta as any).env.VITE_API_URL || `http://localhost:${(import.meta as any).env.VITE_API_PORT || 4000}`
       const res = await fetch(`${API_BASE}/api/check-answer`, {
         method: 'POST',
         headers: {
@@ -66,7 +87,26 @@ function Game({ questions, onBack }: GameProps) {
   }
 
   const handleFinish = () => {
-    onBack()
+    setShowResults(true)
+  }
+
+  if (questionsLoading) {
+    return (
+      <div className="game-container">
+        <h2>Loading questions...</h2>
+        <button onClick={onBack} className="btn btn-secondary">Back to Home</button>
+      </div>
+    )
+  }
+
+  if (questionsError) {
+    return (
+      <div className="game-container">
+        <h2>Error loading questions</h2>
+        <p className="helper-text-error">{questionsError}</p>
+        <button onClick={onBack} className="btn btn-secondary">Back to Home</button>
+      </div>
+    )
   }
 
   if (!currentQuestion) {
