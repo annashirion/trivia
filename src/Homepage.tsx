@@ -83,8 +83,7 @@ function Homepage({ onStart }: HomepageProps) {
         label="Start Playing"
         onClick={startGame}
         enabled={selectedTopics.length > 0}
-        helperText="Select at least one topic"
-        helperVisible={selectedTopics.length === 0}
+        helperText={selectedTopics.length === 0 ? "Select at least one topic" : "You can start playing now"}
       />
     </div>
   )

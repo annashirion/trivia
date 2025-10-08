@@ -63,7 +63,6 @@ function Game({ onBack }: GameProps) {
       if (!res.ok) throw new Error('Failed to check answer')
       const result: AnswerCheck = await res.json()
       setAnswerResult(result)
-      setAnswered(true)
       
       if (result.isCorrect) {
         setScore(prev => prev + 1)
@@ -76,8 +75,8 @@ function Game({ onBack }: GameProps) {
         correctIndex: -1,
         selectedIndex: idx
       })
-      setAnswered(true)
     } finally {
+      setAnswered(true)
       setCheckingAnswer(false)
     }
   }
@@ -99,7 +98,6 @@ function Game({ onBack }: GameProps) {
     return (
       <div className="game-container">
         <h2>Loading questions...</h2>
-        <button onClick={onBack} className="btn btn-secondary">Back to Home</button>
       </div>
     )
   }
@@ -107,7 +105,7 @@ function Game({ onBack }: GameProps) {
   if (questionsError) {
     return (
       <div className="game-container">
-        <h2>Error loading questions</h2>
+        <h2>Failed to get questions</h2>
         <p className="helper-text-error">{questionsError}</p>
         <button onClick={onBack} className="btn btn-secondary">Back to Home</button>
       </div>
@@ -138,7 +136,7 @@ function Game({ onBack }: GameProps) {
         options={currentQuestion.options}
         selectedIndex={selectedIndex}
         correctIndex={answerResult?.correctIndex ?? -1}
-        answered={answered}
+        answered={answered || checkingAnswer}
         onSelect={handleSelect}
       />
 
@@ -147,8 +145,18 @@ function Game({ onBack }: GameProps) {
         onClick={isLast ? handleFinish : handleNext}
         enabled={answered && !checkingAnswer}
         loading={checkingAnswer}
-        helperText={checkingAnswer ? "Checking answer..." : "Choose an answer to continue"}
-        helperVisible={!answered || checkingAnswer}
+        helperText={
+          checkingAnswer 
+            ? "Checking answer..." 
+            : answered 
+              ? (answerResult?.isCorrect ? "Correct ✓" : "Wrong ✗")
+              : "Choose an answer to continue"
+        }
+        helperTextClass={
+          answered 
+            ? (answerResult?.isCorrect ? "helper-text-correct" : "helper-text-wrong")
+            : undefined
+        }
       />
     </div>
   )
