@@ -20,6 +20,7 @@ function Game({ onBack }: GameProps) {
   const [answerResult, setAnswerResult] = useState<AnswerCheck | null>(null)
   const [checkingAnswer, setCheckingAnswer] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const [score, setScore] = useState(0)
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -63,6 +64,10 @@ function Game({ onBack }: GameProps) {
       const result: AnswerCheck = await res.json()
       setAnswerResult(result)
       setAnswered(true)
+      
+      if (result.isCorrect) {
+        setScore(prev => prev + 1)
+      }
     } catch (e: unknown) {
       console.error('Error checking answer:', e)
       // Fallback: assume incorrect if API fails
@@ -109,6 +114,10 @@ function Game({ onBack }: GameProps) {
     )
   }
 
+  if (showResults) {
+    return <Results onBack={onBack} score={score} totalQuestions={questions.length} />
+  }
+
   if (!currentQuestion) {
     return (
       <div className="game-container">
@@ -134,7 +143,7 @@ function Game({ onBack }: GameProps) {
       />
 
       <ActionSection 
-        label={isLast ? 'Go to Home' : 'Next'}
+        label={isLast ? 'Show results' : 'Next'}
         onClick={isLast ? handleFinish : handleNext}
         enabled={answered && !checkingAnswer}
         loading={checkingAnswer}
