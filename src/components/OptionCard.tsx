@@ -23,10 +23,10 @@ function OptionCard({ option, index, isSelected, isCorrect, showState, answered,
   return (
     <div
       role="button"
-      tabIndex={0}
-      onClick={() => onSelect(index)}
+      tabIndex={answered ? -1 : 0}
+      onClick={() => !answered && onSelect(index)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onSelect(index)
+        if (!answered && (e.key === 'Enter' || e.key === ' ')) onSelect(index)
       }}
       className={`${cardClass} ${answered ? 'disabled' : ''}`}
     >

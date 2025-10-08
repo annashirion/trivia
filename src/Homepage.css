@@ -47,10 +47,10 @@
 }
 
 .helper-text {
-  margin: 0;
+  margin: 0 0 1rem;
   color: rgba(52, 152, 219, 0.6);
-  font-size: 0.9rem;
   font-style: italic;
+  font-weight: 600;
   min-height: 1.35rem;
   display: flex;
   align-items: center;

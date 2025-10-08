@@ -7,4 +7,14 @@
   margin-top: 2rem;
 }
 
+.helper-text-correct {
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.helper-text-wrong {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
 
