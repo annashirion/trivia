@@ -55,7 +55,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s ease;
 }
 
 .helper-text-error {
@@ -79,7 +78,6 @@
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
   text-decoration: none;
   display: inline-block;
   min-width: 180px;
@@ -132,7 +130,6 @@
 }
 
 .game-container h2 {
-  font-size: 2.5rem;
   margin-bottom: 1rem;
 }
 
