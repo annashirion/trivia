@@ -19,3 +19,9 @@
   margin-bottom: 2rem;
   opacity: 0.8;
 }
+
+.score-number {
+  font-size: 2rem;
+    color: rgb(46, 183, 204);
+    padding: 0px 5px;
+}
