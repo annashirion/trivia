@@ -3,14 +3,13 @@ import './Homepage.css'
 import ActionSection from './components/ActionSection'
 import TopicCard from './components/TopicCard'
 import type { Topic } from './types'
+import { API_BASE } from './utils/api'
 
 interface HomepageProps {
   onStart: () => void
-  loading?: boolean
-  error?: string | null
 }
 
-function Homepage({ onStart, loading, error }: HomepageProps) {
+function Homepage({ onStart }: HomepageProps) {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([])
   const [topics, setTopics] = useState<Topic[]>([])
   const [topicsLoading, setTopicsLoading] = useState(true)
@@ -19,7 +18,6 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const API_BASE = (import.meta as any).env.VITE_API_URL || `http://localhost:${(import.meta as any).env.VITE_API_PORT || 4000}`
         const res = await fetch(`${API_BASE}/api/topics`)
         if (!res.ok) throw new Error('Failed to fetch topics')
         const data: Topic[] = await res.json()
@@ -42,9 +40,9 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
     )
   }
 
-  const startGame = async () => {
-    if (selectedTopics.length === 0 || loading) return
-    await onStart()
+  const startGame = () => {
+    if (selectedTopics.length === 0) return
+    onStart()
   }
 
   if (topicsLoading) {
@@ -85,10 +83,8 @@ function Homepage({ onStart, loading, error }: HomepageProps) {
         label="Start Playing"
         onClick={startGame}
         enabled={selectedTopics.length > 0}
-        loading={loading}
         helperText="Select at least one topic"
         helperVisible={selectedTopics.length === 0}
-        error={error}
       />
     </div>
   )
