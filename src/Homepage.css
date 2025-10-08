@@ -97,9 +97,9 @@
 }
 
 .btn-secondary {
-  background: rgb(46, 204, 113);
+  background: rgb(23, 181, 175);
   color: white;
-  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+  box-shadow: 0 4px 15px rgba(23, 181, 175, 0.4);
 }
 
 .btn-secondary:hover {

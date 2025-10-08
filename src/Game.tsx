@@ -3,6 +3,7 @@ import './Game.css'
 import ActionSection from './components/ActionSection'
 import OptionsGrid from './components/OptionsGrid'
 import Results from './components/Results'
+import LoadingView from './components/LoadingView'
 import type { Question, AnswerCheck } from './types'
 import { API_BASE } from './utils/api'
 
@@ -96,19 +97,23 @@ function Game({ onBack }: GameProps) {
 
   if (questionsLoading) {
     return (
-      <div className="game-container">
-        <h2>Loading questions...</h2>
-      </div>
+      <LoadingView 
+        title="Just Another Trivia"
+        message="Loading questions..."
+        onBack={onBack}
+      />
     )
   }
 
   if (questionsError) {
     return (
-      <div className="game-container">
-        <h2>Failed to get questions</h2>
-        <p className="helper-text-error">{questionsError}</p>
-        <button onClick={onBack} className="btn btn-secondary">Back to Home</button>
-      </div>
+      <LoadingView 
+        title="Just Another Trivia"
+        message="Failed to load questions"
+        onBack={onBack}
+        showBackButton={true}
+        isError={true}
+      />
     )
   }
 

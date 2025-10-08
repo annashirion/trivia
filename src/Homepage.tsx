@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './Homepage.css'
 import ActionSection from './components/ActionSection'
 import TopicCard from './components/TopicCard'
+import LoadingView from './components/LoadingView'
 import type { Topic } from './types'
 import { API_BASE } from './utils/api'
 
@@ -47,19 +48,20 @@ function Homepage({ onStart }: HomepageProps) {
 
   if (topicsLoading) {
     return (
-      <div className="home-container">
-        <h1 className="topics-title">Just Another Trivia</h1>
-        <p>Loading topics...</p>
-      </div>
+      <LoadingView 
+        title="Just Another Trivia"
+        message="Loading topics..."
+      />
     )
   }
 
   if (topicsError) {
     return (
-      <div className="home-container">
-        <h1 className="topics-title">Just Another Trivia</h1>
-        <p className="helper-text-error">{topicsError}</p>
-      </div>
+      <LoadingView 
+        title="Just Another Trivia"
+        message="Failed to load topics"
+        isError={true}
+      />
     )
   }
 
