@@ -26,3 +26,17 @@
   color: #e74c3c;
   opacity: 1;
 }
+
+@media (max-width: 768px) {
+  .loading-title {
+    font-size: 1.5rem;
+    margin: 0 0 2.5rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .loading-title {
+    font-size: 1.3rem;
+    margin: 0 0 2rem 0;
+  }
+}
