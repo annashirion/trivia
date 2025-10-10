@@ -1,3 +1,10 @@
+require('dotenv').config();
+
+// Add fetch polyfill for Node.js 18
+if (!globalThis.fetch) {
+  globalThis.fetch = require('node-fetch');
+}
+
 const express = require('express');
 const cors = require('cors');
 const { getQuestions } = require('./controllers/questionsController');

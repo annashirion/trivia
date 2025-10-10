@@ -9,6 +9,7 @@ export interface Question {
   id: number
   question: string
   options: string[]
+  topic: string
 }
 
 export interface AnswerCheck {

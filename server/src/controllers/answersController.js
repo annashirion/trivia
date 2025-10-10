@@ -1,4 +1,4 @@
-const { correctAnswers } = require('../data/questions');
+const { getCorrectAnswer } = require('../services/questionStore');
 
 function checkAnswer(req, res) {
   const { questionId, selectedIndex } = req.body;
@@ -7,8 +7,8 @@ function checkAnswer(req, res) {
     return res.status(400).json({ error: 'questionId and selectedIndex are required' });
   }
   
-  const correctIndex = correctAnswers[questionId];
-  if (correctIndex === undefined) {
+  const correctIndex = getCorrectAnswer(questionId);
+  if (correctIndex === null) {
     return res.status(404).json({ error: 'Question not found' });
   }
   

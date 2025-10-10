@@ -9,9 +9,10 @@ import { API_BASE } from './utils/api'
 
 interface GameProps {
   onBack: () => void
+  selectedTopics: number[]
 }
 
-function Game({ onBack }: GameProps) {
+function Game({ onBack, selectedTopics }: GameProps) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [questionsLoading, setQuestionsLoading] = useState(true)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
@@ -22,23 +23,40 @@ function Game({ onBack }: GameProps) {
   const [checkingAnswer, setCheckingAnswer] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
-
   useEffect(() => {
+    let isCancelled = false
+
     const fetchQuestions = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/questions`)
+        const topicsParam = selectedTopics.join(',')
+        const url = `${API_BASE}/api/questions${topicsParam ? `?topicIndexes=${encodeURIComponent(topicsParam)}` : ''}`
+        const res = await fetch(url)
         if (!res.ok) throw new Error('Failed to fetch questions')
         const data: Question[] = await res.json()
-        setQuestions(data)
+        
+        // Only update state if the effect hasn't been cancelled
+        if (!isCancelled) {
+          setQuestions(data)
+        }
       } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : 'Unknown error'
-        setQuestionsError(message)
+        if (!isCancelled) {
+          const message = e instanceof Error ? e.message : 'Unknown error'
+          setQuestionsError(message)
+        }
       } finally {
-        setQuestionsLoading(false)
+        if (!isCancelled) {
+          setQuestionsLoading(false)
+        }
       }
     }
+    
     fetchQuestions()
-  }, [])
+    
+    // Cleanup function to cancel the request if component unmounts or effect re-runs
+    return () => {
+      isCancelled = true
+    }
+  }, [selectedTopics.join(',')])
 
   const currentQuestion = useMemo(() => questions[currentIndex], [questions, currentIndex])
   const isLast = currentIndex === questions.length - 1
@@ -124,7 +142,7 @@ function Game({ onBack }: GameProps) {
   if (!currentQuestion) {
     return (
       <div className="game-container">
-        <p>No questions available.</p>
+        <p>No questions available</p>
         <button onClick={onBack} className="btn btn-secondary">Back to Home</button>
       </div>
     )
