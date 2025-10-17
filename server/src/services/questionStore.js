@@ -13,7 +13,8 @@ function storeQuestions(questions) {
       correctAnswer: question.correctAnswer,
       question: question.question,
       options: question.options,
-      topic: question.topic
+      topic: question.topic,
+      feedbackAudio: question.feedbackAudio
     });
   });
 }
@@ -26,6 +27,15 @@ function storeQuestions(questions) {
 function getCorrectAnswer(questionId) {
   const question = currentQuestions.get(questionId);
   return question ? question.correctAnswer : null;
+}
+
+/**
+ * Get a question by ID
+ * @param {number} questionId - The question ID
+ * @returns {Object|null} The question object or null if not found
+ */
+function getQuestion(questionId) {
+  return currentQuestions.get(questionId) || null;
 }
 
 /**
@@ -46,6 +56,7 @@ function clearQuestions() {
 module.exports = {
   storeQuestions,
   getCorrectAnswer,
+  getQuestion,
   getAllQuestions,
   clearQuestions
 };

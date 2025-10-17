@@ -1,6 +1,12 @@
 const { generateQuestions } = require('../services/openaiService');
 const { storeQuestions } = require('../services/questionStore');
 const { topics } = require('../data/topics');
+const OpenAI = require('openai');
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 async function getQuestions(req, res) {
   try {
@@ -29,18 +35,77 @@ async function getQuestions(req, res) {
     // Generate questions using OpenAI with topic data
     const questions = await generateQuestions(selectedTopics, 5);
     
-    // Store questions for answer checking
-    storeQuestions(questions);
+    // Generate audio for each question (question + options + feedback audio)
+    const questionsWithAudio = await Promise.all(
+      questions.map(async (question) => {
+        try {
+          // Create full text including question and options
+          const fullText = `${question.question} Options: ${question.options.join(', ')}`;
+          
+          const mp3 = await openai.audio.speech.create({
+            model: "tts-1",
+            voice: "alloy",
+            input: fullText,
+          });
+          
+          const audioBuffer = Buffer.from(await mp3.arrayBuffer());
+          const audioBase64 = audioBuffer.toString('base64');
+          
+          // Generate feedback audio for all possible answers
+          const correctAnswerText = question.options[question.correctAnswer];
+          const correctFeedbackText = `It's ${correctAnswerText}, you are right!`;
+          const wrongFeedbackText = `Unfortunately you are wrong. The correct answer was ${correctAnswerText}.`;
+          
+          // Generate correct answer audio
+          const correctMp3 = await openai.audio.speech.create({
+            model: "tts-1",
+            voice: "alloy",
+            input: correctFeedbackText,
+          });
+          const correctAudioBuffer = Buffer.from(await correctMp3.arrayBuffer());
+          const correctAudioBase64 = correctAudioBuffer.toString('base64');
+          
+          // Generate wrong answer audio
+          const wrongMp3 = await openai.audio.speech.create({
+            model: "tts-1",
+            voice: "alloy",
+            input: wrongFeedbackText,
+          });
+          const wrongAudioBuffer = Buffer.from(await wrongMp3.arrayBuffer());
+          const wrongAudioBase64 = wrongAudioBuffer.toString('base64');
+          
+          return {
+            id: question.id,
+            question: question.question,
+            options: question.options,
+            topic: question.topic,
+            correctAnswer: question.correctAnswer,
+            audio: `data:audio/mpeg;base64,${audioBase64}`,
+            feedbackAudio: {
+              correct: `data:audio/mpeg;base64,${correctAudioBase64}`,
+              wrong: `data:audio/mpeg;base64,${wrongAudioBase64}`
+            }
+          };
+        } catch (audioError) {
+          console.error(`Error generating audio for question ${question.id}:`, audioError);
+          // Return question without audio if audio generation fails
+          return {
+            id: question.id,
+            question: question.question,
+            options: question.options,
+            topic: question.topic,
+            correctAnswer: question.correctAnswer,
+            audio: null,
+            feedbackAudio: null
+          };
+        }
+      })
+    );
     
-    // Remove correctAnswer from response (frontend doesn't need it)
-    const questionsForClient = questions.map(q => ({
-      id: q.id,
-      question: q.question,
-      options: q.options,
-      topic: q.topic
-    }));
+    // Store questions with audio for answer checking
+    storeQuestions(questionsWithAudio);
     
-    res.json(questionsForClient);
+    res.json(questionsWithAudio);
     
   } catch (error) {
     console.error('Error in getQuestions:', error);

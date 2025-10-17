@@ -1,4 +1,4 @@
-const { getCorrectAnswer } = require('../services/questionStore');
+const { getCorrectAnswer, getQuestion } = require('../services/questionStore');
 
 function checkAnswer(req, res) {
   const { questionId, selectedIndex } = req.body;
@@ -14,10 +14,19 @@ function checkAnswer(req, res) {
   
   const isCorrect = selectedIndex === correctIndex;
   
+  // Get the question data to access pre-generated feedback audio
+  const question = getQuestion(questionId);
+  let feedbackAudio = null;
+  
+  if (question && question.feedbackAudio) {
+    feedbackAudio = isCorrect ? question.feedbackAudio.correct : question.feedbackAudio.wrong;
+  }
+  
   res.json({
     isCorrect,
     correctIndex,
-    selectedIndex
+    selectedIndex,
+    feedbackAudio
   });
 }
 
