@@ -33,6 +33,7 @@ function Homepage({ onStart }: HomepageProps) {
     fetchTopics()
   }, [])
 
+
   const toggleTopic = (topicId: string) => {
     setSelectedTopics(prev => 
       prev.includes(topicId) 

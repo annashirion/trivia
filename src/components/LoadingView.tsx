@@ -1,14 +1,27 @@
+import { useState, useEffect } from 'react'
 import './LoadingView.css'
+import { useLoadingMessages } from '../hooks/useLoadingMessages'
 
 interface LoadingViewProps {
   title: string
-  message: string
+  message?: string
   onBack?: () => void
   showBackButton?: boolean
   isError?: boolean
+  useCyclingMessages?: boolean
 }
 
-function LoadingView({ title, message, onBack, showBackButton = false, isError = false }: LoadingViewProps) {
+function LoadingView({ 
+  title, 
+  message, 
+  onBack, 
+  showBackButton = false, 
+  isError = false,
+  useCyclingMessages = false 
+}: LoadingViewProps) {
+  const cyclingMessage = useLoadingMessages(4000)
+  const displayMessage = useCyclingMessages && !isError ? cyclingMessage : message
+
   return (
     <div className="loading-container">
       <div className="loading-content">
@@ -24,7 +37,7 @@ function LoadingView({ title, message, onBack, showBackButton = false, isError =
           </div>
         )}
         
-        <p className={`loading-message ${isError ? 'error' : ''}`}>{message}</p>
+        <p className={`loading-message ${isError ? 'error' : ''}`}>{displayMessage}</p>
         
         {!isError && (
           <div className="loading-dots">
