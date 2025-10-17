@@ -5,13 +5,15 @@ import Game from './Game'
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false)
+  const [selectedTopics, setSelectedTopics] = useState<number[]>([])
 
-  const handleStart = () => {
+  const handleStart = (topicIndexes: number[]) => {
+    setSelectedTopics(topicIndexes)
     setGameStarted(true)
   }
 
   if (gameStarted) {
-    return <Game onBack={() => setGameStarted(false)} />
+    return <Game onBack={() => setGameStarted(false)} selectedTopics={selectedTopics} />
   }
 
   return <Homepage onStart={handleStart} />

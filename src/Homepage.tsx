@@ -7,7 +7,7 @@ import type { Topic } from './types'
 import { API_BASE } from './utils/api'
 
 interface HomepageProps {
-  onStart: () => void
+  onStart: (topicIndexes: number[]) => void
 }
 
 function Homepage({ onStart }: HomepageProps) {
@@ -43,7 +43,11 @@ function Homepage({ onStart }: HomepageProps) {
 
   const startGame = () => {
     if (selectedTopics.length === 0) return
-    onStart()
+    // Convert topic IDs to indexes
+    const topicIndexes = selectedTopics.map(topicId => 
+      topics.findIndex(topic => topic.id === topicId)
+    ).filter(index => index !== -1)
+    onStart(topicIndexes)
   }
 
   if (topicsLoading) {
