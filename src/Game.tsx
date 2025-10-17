@@ -4,8 +4,10 @@ import ActionSection from './components/ActionSection'
 import OptionsGrid from './components/OptionsGrid'
 import Results from './components/Results'
 import LoadingView from './components/LoadingView'
+import AudioPlayer from './components/AudioPlayer'
 import type { Question, AnswerCheck } from './types'
 import { API_BASE } from './utils/api'
+import { useAudioManager } from './hooks/useAudioManager'
 
 interface GameProps {
   onBack: () => void
@@ -16,6 +18,7 @@ function Game({ onBack, selectedTopics }: GameProps) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [questionsLoading, setQuestionsLoading] = useState(true)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
+  const [resultsAudio, setResultsAudio] = useState<Record<number, string>>({})
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [answered, setAnswered] = useState(false)
@@ -23,21 +26,25 @@ function Game({ onBack, selectedTopics }: GameProps) {
   const [checkingAnswer, setCheckingAnswer] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
+  const [feedbackAudio, setFeedbackAudio] = useState<string | null>(null)
+  
+  const { stopAllAudio } = useAudioManager()
   useEffect(() => {
     let isCancelled = false
 
     const fetchQuestions = async () => {
       try {
         const topicsParam = selectedTopics.join(',')
-        const url = `${API_BASE}/api/questions${topicsParam ? `?topicIndexes=${encodeURIComponent(topicsParam)}` : ''}`
-        const res = await fetch(url)
-        if (!res.ok) throw new Error('Failed to fetch questions')
-        const data: Question[] = await res.json()
-        
-        // Only update state if the effect hasn't been cancelled
-        if (!isCancelled) {
-          setQuestions(data)
-        }
+            const url = `${API_BASE}/api/questions${topicsParam ? `?topicIndexes=${encodeURIComponent(topicsParam)}` : ''}`
+            const res = await fetch(url)
+            if (!res.ok) throw new Error('Failed to fetch questions')
+            const data = await res.json()
+
+            // Only update state if the effect hasn't been cancelled
+            if (!isCancelled) {
+              setQuestions(data.questions)
+              setResultsAudio(data.resultsAudio || {})
+            }
       } catch (e: unknown) {
         if (!isCancelled) {
           const message = e instanceof Error ? e.message : 'Unknown error'
@@ -64,6 +71,9 @@ function Game({ onBack, selectedTopics }: GameProps) {
   const handleSelect = async (idx: number) => {
     if (answered || checkingAnswer) return
     
+    // Stop all currently playing audio when user selects an answer
+    stopAllAudio()
+    
     setSelectedIndex(idx)
     setCheckingAnswer(true)
     
@@ -86,6 +96,12 @@ function Game({ onBack, selectedTopics }: GameProps) {
       if (result.isCorrect) {
         setScore(prev => prev + 1)
       }
+      
+      // Use feedback audio from the response
+      if (result.feedbackAudio) {
+        setFeedbackAudio(result.feedbackAudio)
+      }
+      
     } catch (e: unknown) {
       console.error('Error checking answer:', e)
       // Fallback: assume incorrect if API fails
@@ -107,6 +123,7 @@ function Game({ onBack, selectedTopics }: GameProps) {
     setSelectedIndex(null)
     setAnswered(false)
     setAnswerResult(null)
+    setFeedbackAudio(null)
   }
 
   const handleFinish = () => {
@@ -115,9 +132,9 @@ function Game({ onBack, selectedTopics }: GameProps) {
 
   if (questionsLoading) {
     return (
-      <LoadingView 
+      <LoadingView
         title="Just Another Trivia"
-        message="Loading questions..."
+        useCyclingMessages={true}
         onBack={onBack}
       />
     )
@@ -136,7 +153,7 @@ function Game({ onBack, selectedTopics }: GameProps) {
   }
 
   if (showResults) {
-    return <Results onBack={onBack} score={score} totalQuestions={questions.length} />
+    return <Results onBack={onBack} score={score} totalQuestions={questions.length} resultsAudio={resultsAudio} />
   }
 
   if (!currentQuestion) {
@@ -153,7 +170,10 @@ function Game({ onBack, selectedTopics }: GameProps) {
       <div className="game-meta">
         Question {currentIndex + 1} / {questions.length}
       </div>
-      <h2 className="game-question">{currentQuestion.question}</h2>
+      <div className="game-question-container">
+        <h2 className="game-question">{currentQuestion.question}</h2>
+        <AudioPlayer audioData={currentQuestion.audio} className="question-audio" autoPlay={true} />
+      </div>
 
       <OptionsGrid
         options={currentQuestion.options}
@@ -162,6 +182,12 @@ function Game({ onBack, selectedTopics }: GameProps) {
         answered={answered || checkingAnswer}
         onSelect={handleSelect}
       />
+
+      {feedbackAudio && (
+        <div className="feedback-audio-container">
+          <AudioPlayer audioData={feedbackAudio} className="feedback-audio" autoPlay={true} />
+        </div>
+      )}
 
       <ActionSection 
         label={isLast ? 'Show results' : 'Next'}

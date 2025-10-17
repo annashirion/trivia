@@ -3,8 +3,24 @@
   color: #8a8f98;
 }
 
-.game-question {
+.game-question-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 16px;
+}
+
+.game-question {
+  margin: 0;
+  flex: 1;
+}
+
+.question-audio {
+  display: none; /* Hide question audio UI - audio plays automatically */
+}
+
+.feedback-audio-container {
+  display: none; /* Hide feedback audio UI - audio plays automatically */
 }
 
 

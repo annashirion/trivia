@@ -1,15 +1,28 @@
+import { useState, useEffect } from 'react'
 import './Results.css'
+import AudioPlayer from './AudioPlayer'
 
 interface ResultsProps {
   onBack: () => void
   score: number
   totalQuestions: number
+  resultsAudio: Record<number, string>
 }
 
-function Results({ onBack, score, totalQuestions }: ResultsProps) {
+function Results({ onBack, score, totalQuestions, resultsAudio }: ResultsProps) {
+  const [currentResultsAudio, setCurrentResultsAudio] = useState<string | null>(null)
+
+  // Use pre-generated results audio
+  useEffect(() => {
+    if (resultsAudio[score] !== undefined) {
+      setCurrentResultsAudio(resultsAudio[score])
+    }
+  }, [score, resultsAudio])
+
   return (
     <div className="results-container">
       <h2>Quiz Complete!</h2>
+      <AudioPlayer audioData={currentResultsAudio} className="results-audio" autoPlay={true} />
       <p>You answered <span className="score-number">{score}</span> out of <span className="score-number">{totalQuestions}</span> questions correctly</p>
       <button onClick={onBack} className="btn btn-primary">
         Go to Home

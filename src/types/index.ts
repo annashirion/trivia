@@ -10,10 +10,16 @@ export interface Question {
   question: string
   options: string[]
   topic: string
+  audio?: string | null
+  feedbackAudio?: {
+    correct: string
+    wrong: string
+  } | null
 }
 
 export interface AnswerCheck {
   isCorrect: boolean
   correctIndex: number
   selectedIndex: number
+  feedbackAudio?: string | null
 }

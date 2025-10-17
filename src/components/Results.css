@@ -13,6 +13,10 @@
   margin-bottom: 1rem;
 }
 
+.results-audio {
+  display: none; /* Hide results audio UI - audio plays automatically */
+}
+
 .results-container p {
   font-size: 1.2rem;
   margin-bottom: 2rem;
