@@ -8,6 +8,42 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+/**
+ * Generate results audio for all possible scores (0-5 out of 5)
+ */
+async function generateResultsAudio() {
+  const resultsTexts = [
+    "You scored 0 out of 5 questions. That's 0 percent. Don't give up, try again!",
+    "You scored 1 out of 5 questions. That's 20 percent. Keep practicing!",
+    "You scored 2 out of 5 questions. That's 40 percent. You're getting there!",
+    "You scored 3 out of 5 questions. That's 60 percent. Good job!",
+    "You scored 4 out of 5 questions. That's 80 percent. Excellent work!",
+    "You scored 5 out of 5 questions. That's 100 percent. Perfect! Outstanding performance!"
+  ];
+
+  const resultsAudio = {};
+
+  try {
+    for (let i = 0; i < resultsTexts.length; i++) {
+      const mp3 = await openai.audio.speech.create({
+        model: "tts-1",
+        voice: "alloy",
+        input: resultsTexts[i],
+      });
+
+      const audioBuffer = Buffer.from(await mp3.arrayBuffer());
+      const audioBase64 = audioBuffer.toString('base64');
+      resultsAudio[i] = `data:audio/mpeg;base64,${audioBase64}`;
+    }
+
+    console.log('Generated results audio for all scores (0-5)');
+    return resultsAudio;
+  } catch (error) {
+    console.error('Error generating results audio:', error);
+    return {};
+  }
+}
+
 async function getQuestions(req, res) {
   try {
     const { topicIndexes } = req.query;
@@ -40,7 +76,7 @@ async function getQuestions(req, res) {
       questions.map(async (question) => {
         try {
           // Create full text including question and options
-          const fullText = `${question.question} Options: ${question.options.join(', ')}`;
+          const fullText = `${question.question} ${question.options.join(', ')}`;
           
           const mp3 = await openai.audio.speech.create({
             model: "tts-1",
@@ -102,10 +138,17 @@ async function getQuestions(req, res) {
       })
     );
     
+    // Generate results audio for all possible scores (0-5 out of 5)
+    const resultsAudio = await generateResultsAudio();
+    
     // Store questions with audio for answer checking
     storeQuestions(questionsWithAudio);
     
-    res.json(questionsWithAudio);
+    // Return questions with results audio
+    res.json({
+      questions: questionsWithAudio,
+      resultsAudio: resultsAudio
+    });
     
   } catch (error) {
     console.error('Error in getQuestions:', error);
