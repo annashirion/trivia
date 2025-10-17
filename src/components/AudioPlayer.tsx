@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect } from 'react'
 import './AudioPlayer.css'
 import { useAudioManager } from '../hooks/useAudioManager'
 
@@ -10,10 +10,6 @@ interface AudioPlayerProps {
 
 function AudioPlayer({ audioData, className = '', autoPlay = false }: AudioPlayerProps) {
   const { audioRef, registerAudio, unregisterAudio, playAudio } = useAudioManager()
-
-  const handleAudioEnd = () => {
-    // Audio ended, no action needed
-  }
 
   const handleAudioError = () => {
     console.log('Audio playback failed')
@@ -55,7 +51,6 @@ function AudioPlayer({ audioData, className = '', autoPlay = false }: AudioPlaye
       <audio
         ref={audioRef}
         src={audioData}
-        onEnded={handleAudioEnd}
         onError={handleAudioError}
         preload="none"
       />
