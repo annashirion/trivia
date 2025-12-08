@@ -6,7 +6,7 @@ import Results from './components/Results'
 import LoadingView from './components/LoadingView'
 import AudioPlayer from './components/AudioPlayer'
 import type { Question, AnswerCheck } from './types'
-import { API_BASE } from './utils/api'
+import { API_BASE, getQuestionHistory, addToQuestionHistory } from './utils/api'
 import { useAudioManager } from './hooks/useAudioManager'
 
 interface GameProps {
@@ -34,17 +34,27 @@ function Game({ onBack, selectedTopics }: GameProps) {
 
     const fetchQuestions = async () => {
       try {
-        const topicsParam = selectedTopics.join(',')
-            const url = `${API_BASE}/api/questions${topicsParam ? `?topicIndexes=${encodeURIComponent(topicsParam)}` : ''}`
-            const res = await fetch(url)
-            if (!res.ok) throw new Error('Failed to fetch questions')
-            const data = await res.json()
+        const previousQuestions = getQuestionHistory()
+        
+        const res = await fetch(`${API_BASE}/api/questions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            topicIndexes: selectedTopics,
+            previousQuestions
+          })
+        })
+        
+        if (!res.ok) throw new Error('Failed to fetch questions')
+        const data = await res.json()
 
-            // Only update state if the effect hasn't been cancelled
-            if (!isCancelled) {
-              setQuestions(data.questions)
-              setResultsAudio(data.resultsAudio || {})
-            }
+        // Only update state if the effect hasn't been cancelled
+        if (!isCancelled) {
+          setQuestions(data.questions)
+          setResultsAudio(data.resultsAudio || {})
+        }
       } catch (e: unknown) {
         if (!isCancelled) {
           const message = e instanceof Error ? e.message : 'Unknown error'
@@ -127,6 +137,9 @@ function Game({ onBack, selectedTopics }: GameProps) {
   }
 
   const handleFinish = () => {
+    // Save questions to history only when game is finished (prevents cheating)
+    const questionTexts = questions.map((q: Question) => q.question)
+    addToQuestionHistory(questionTexts)
     setShowResults(true)
   }
 

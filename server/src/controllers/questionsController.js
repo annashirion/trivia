@@ -46,21 +46,18 @@ async function generateResultsAudio() {
 
 async function getQuestions(req, res) {
   try {
-    const { topicIndexes } = req.query;
+    const { topicIndexes, previousQuestions = [] } = req.body;
     
-    if (!topicIndexes) {
-      return res.status(400).json({ error: 'Topic indexes parameter is required' });
+    if (!topicIndexes || !Array.isArray(topicIndexes)) {
+      return res.status(400).json({ error: 'Topic indexes array is required' });
     }
     
-    // Parse topic indexes from query string (can be comma-separated)
-    const selectedIndexes = topicIndexes.split(',').map(index => parseInt(index.trim()));
-    
-    if (selectedIndexes.length === 0 || selectedIndexes.some(index => isNaN(index))) {
+    if (topicIndexes.length === 0 || topicIndexes.some(index => typeof index !== 'number')) {
       return res.status(400).json({ error: 'Invalid topic indexes provided' });
     }
     
     // Map indexes to topic data
-    const selectedTopics = selectedIndexes
+    const selectedTopics = topicIndexes
       .filter(index => index >= 0 && index < topics.length)
       .map(index => topics[index]);
     
@@ -68,8 +65,10 @@ async function getQuestions(req, res) {
       return res.status(400).json({ error: 'No valid topics found for the provided indexes' });
     }
     
-    // Generate questions using OpenAI with topic data
-    const questions = await generateQuestions(selectedTopics, 5);
+    console.log(`Generating questions, avoiding ${previousQuestions.length} previous questions`);
+    
+    // Generate questions using OpenAI with topic data and previous questions
+    const questions = await generateQuestions(selectedTopics, 5, previousQuestions);
     
     // Generate audio for each question (question + options + feedback audio)
     const questionsWithAudio = await Promise.all(

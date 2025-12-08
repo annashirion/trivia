@@ -16,7 +16,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/questions', getQuestions);
+app.post('/api/questions', getQuestions);
 app.get('/api/topics', getTopics);
 app.post('/api/check-answer', checkAnswer);
 app.post('/api/feedback-audio', generateFeedbackAudio);
