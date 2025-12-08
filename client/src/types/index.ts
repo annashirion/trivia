@@ -9,12 +9,7 @@ export interface Question {
   id: number
   question: string
   options: string[]
-  topic: string
   audio?: string | null
-  feedbackAudio?: {
-    correct: string
-    wrong: string
-  } | null
 }
 
 export interface AnswerCheck {

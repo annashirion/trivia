@@ -140,12 +140,19 @@ async function getQuestions(req, res) {
     // Generate results audio for all possible scores (0-5 out of 5)
     const resultsAudio = await generateResultsAudio();
     
-    // Store questions with audio for answer checking
+    // Store questions with audio for answer checking (includes correctAnswer and feedbackAudio)
     storeQuestions(questionsWithAudio);
     
-    // Return questions with results audio
+    // Return only the fields needed by the frontend (exclude correctAnswer, feedbackAudio, topic)
+    const questionsForClient = questionsWithAudio.map(({ id, question, options, audio }) => ({
+      id,
+      question,
+      options,
+      audio
+    }));
+    
     res.json({
-      questions: questionsWithAudio,
+      questions: questionsForClient,
       resultsAudio: resultsAudio
     });
     
