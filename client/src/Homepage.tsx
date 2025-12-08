@@ -1,37 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './Homepage.css'
 import ActionSection from './components/ActionSection'
 import TopicCard from './components/TopicCard'
 import LoadingView from './components/LoadingView'
 import type { Topic } from './types'
-import { API_BASE } from './utils/api'
 
 interface HomepageProps {
   onStart: (topicIndexes: number[]) => void
+  topics: Topic[]
+  topicsLoading: boolean
+  topicsError: string | null
 }
 
-function Homepage({ onStart }: HomepageProps) {
+function Homepage({ onStart, topics, topicsLoading, topicsError }: HomepageProps) {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([])
-  const [topics, setTopics] = useState<Topic[]>([])
-  const [topicsLoading, setTopicsLoading] = useState(true)
-  const [topicsError, setTopicsError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchTopics = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/topics`)
-        if (!res.ok) throw new Error('Failed to fetch topics')
-        const data: Topic[] = await res.json()
-        setTopics(data)
-      } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : 'Unknown error'
-        setTopicsError(message)
-      } finally {
-        setTopicsLoading(false)
-      }
-    }
-    fetchTopics()
-  }, [])
 
 
   const toggleTopic = (topicId: string) => {
