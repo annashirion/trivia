@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const { getQuestions } = require('./controllers/questionsController');
+const { getQuestions, getQuestionAudio, getResultsAudio } = require('./controllers/questionsController');
 const { getTopics } = require('./controllers/topicsController');
 const { checkAnswer } = require('./controllers/answersController');
 const { generateFeedbackAudio } = require('./controllers/feedbackController');
@@ -17,6 +17,8 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/api/questions', getQuestions);
+app.get('/api/question-audio/:id', getQuestionAudio);
+app.get('/api/results-audio', getResultsAudio);
 app.get('/api/topics', getTopics);
 app.post('/api/check-answer', checkAnswer);
 app.post('/api/feedback-audio', generateFeedbackAudio);

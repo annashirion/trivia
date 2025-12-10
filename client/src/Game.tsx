@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import './Game.css'
 import ActionSection from './components/ActionSection'
 import OptionsGrid from './components/OptionsGrid'
@@ -8,6 +8,7 @@ import AudioPlayer from './components/AudioPlayer'
 import type { Question, AnswerCheck } from './types'
 import { API_BASE, getQuestionHistory, addToQuestionHistory } from './utils/api'
 import { useAudioManager } from './hooks/useAudioManager'
+import { useAudioPrefetch } from './hooks/useAudioPrefetch'
 
 interface GameProps {
   onBack: () => void
@@ -18,7 +19,6 @@ function Game({ onBack, selectedTopics }: GameProps) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [questionsLoading, setQuestionsLoading] = useState(true)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
-  const [resultsAudio, setResultsAudio] = useState<Record<number, string>>({})
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [answered, setAnswered] = useState(false)
@@ -27,8 +27,21 @@ function Game({ onBack, selectedTopics }: GameProps) {
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
   const [feedbackAudio, setFeedbackAudio] = useState<string | null>(null)
+  const [waitingForAudio, setWaitingForAudio] = useState(false)
+  const [pendingNextIndex, setPendingNextIndex] = useState<number | null>(null)
+  const [waitingForResults, setWaitingForResults] = useState(false)
   
   const { stopAllAudio } = useAudioManager()
+  const { 
+    isAudioReady, 
+    isResultsAudioReady,
+    fetchQuestionAudio, 
+    fetchResultsAudio,
+    getQuestionAudio,
+    resultsAudio
+  } = useAudioPrefetch()
+
+  // Fetch questions (without audio) on mount
   useEffect(() => {
     let isCancelled = false
 
@@ -53,7 +66,6 @@ function Game({ onBack, selectedTopics }: GameProps) {
         // Only update state if the effect hasn't been cancelled
         if (!isCancelled) {
           setQuestions(data.questions)
-          setResultsAudio(data.resultsAudio || {})
         }
       } catch (e: unknown) {
         if (!isCancelled) {
@@ -75,8 +87,70 @@ function Game({ onBack, selectedTopics }: GameProps) {
     }
   }, [selectedTopics.join(',')])
 
+  // Fetch first question's audio once questions are loaded
+  useEffect(() => {
+    if (questions.length > 0 && !isAudioReady(questions[0].id)) {
+      fetchQuestionAudio(questions[0].id)
+    }
+  }, [questions, isAudioReady, fetchQuestionAudio])
+
+  // Prefetch next question's audio when current question is shown
+  useEffect(() => {
+    if (questions.length === 0) return
+    
+    const currentQuestion = questions[currentIndex]
+    const nextIndex = currentIndex + 1
+    const isLast = currentIndex === questions.length - 1
+    
+    // Once current question audio is ready, prefetch next one
+    if (isAudioReady(currentQuestion.id)) {
+      if (!isLast && nextIndex < questions.length) {
+        const nextQuestion = questions[nextIndex]
+        if (!isAudioReady(nextQuestion.id)) {
+          fetchQuestionAudio(nextQuestion.id)
+        }
+      } else if (isLast) {
+        // On last question, start fetching results audio
+        fetchResultsAudio()
+      }
+    }
+  }, [questions, currentIndex, isAudioReady, fetchQuestionAudio, fetchResultsAudio])
+
+  // Handle pending navigation when audio becomes ready
+  useEffect(() => {
+    if (pendingNextIndex !== null && questions.length > 0) {
+      const nextQuestion = questions[pendingNextIndex]
+      if (isAudioReady(nextQuestion.id)) {
+        setCurrentIndex(pendingNextIndex)
+        setSelectedIndex(null)
+        setAnswered(false)
+        setAnswerResult(null)
+        setFeedbackAudio(null)
+        setPendingNextIndex(null)
+        setWaitingForAudio(false)
+      }
+    }
+  }, [pendingNextIndex, questions, isAudioReady])
+
+  // Handle pending results when audio becomes ready
+  useEffect(() => {
+    if (waitingForResults && isResultsAudioReady) {
+      // Save questions to history only when game is finished
+      const questionTexts = questions.map((q: Question) => q.question)
+      addToQuestionHistory(questionTexts)
+      setWaitingForResults(false)
+      setShowResults(true)
+    }
+  }, [waitingForResults, isResultsAudioReady, questions])
+
   const currentQuestion = useMemo(() => questions[currentIndex], [questions, currentIndex])
   const isLast = currentIndex === questions.length - 1
+
+  // Get current question's audio from the prefetch cache
+  const currentQuestionAudio = useMemo(() => {
+    if (!currentQuestion) return null
+    return getQuestionAudio(currentQuestion.id)
+  }, [currentQuestion, getQuestionAudio])
 
   const handleSelect = async (idx: number) => {
     if (answered || checkingAnswer) return
@@ -107,9 +181,13 @@ function Game({ onBack, selectedTopics }: GameProps) {
         setScore(prev => prev + 1)
       }
       
-      // Use feedback audio from the response
-      if (result.feedbackAudio) {
-        setFeedbackAudio(result.feedbackAudio)
+      // Use feedback audio from prefetched data
+      const questionAudio = getQuestionAudio(currentQuestion.id)
+      if (questionAudio?.feedbackAudio) {
+        const feedback = result.isCorrect 
+          ? questionAudio.feedbackAudio.correct 
+          : questionAudio.feedbackAudio.wrong
+        setFeedbackAudio(feedback)
       }
       
     } catch (e: unknown) {
@@ -126,21 +204,67 @@ function Game({ onBack, selectedTopics }: GameProps) {
     }
   }
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (!answered) return
     if (isLast) return
-    setCurrentIndex(prev => prev + 1)
-    setSelectedIndex(null)
-    setAnswered(false)
-    setAnswerResult(null)
-    setFeedbackAudio(null)
+    
+    const nextIdx = currentIndex + 1
+    const nextQuestion = questions[nextIdx]
+    
+    // Check if next question's audio is ready
+    if (isAudioReady(nextQuestion.id)) {
+      // Audio ready, navigate immediately
+      setCurrentIndex(nextIdx)
+      setSelectedIndex(null)
+      setAnswered(false)
+      setAnswerResult(null)
+      setFeedbackAudio(null)
+    } else {
+      // Audio not ready, show loader and wait
+      setWaitingForAudio(true)
+      setPendingNextIndex(nextIdx)
+      // Ensure we're fetching the audio
+      fetchQuestionAudio(nextQuestion.id)
+    }
+  }, [answered, isLast, currentIndex, questions, isAudioReady, fetchQuestionAudio])
+
+  const handleFinish = useCallback(() => {
+    // Check if results audio is ready
+    if (isResultsAudioReady) {
+      // Audio ready, show results immediately
+      const questionTexts = questions.map((q: Question) => q.question)
+      addToQuestionHistory(questionTexts)
+      setShowResults(true)
+    } else {
+      // Audio not ready, show loader and wait
+      setWaitingForResults(true)
+      // Ensure we're fetching the results audio
+      fetchResultsAudio()
+    }
+  }, [isResultsAudioReady, questions, fetchResultsAudio])
+
+  // Show loader while waiting for audio
+  if (waitingForAudio) {
+    return (
+      <LoadingView
+        title="Just Another Trivia"
+        message="Loading next question..."
+        onBack={onBack}
+        showBackButton={true}
+      />
+    )
   }
 
-  const handleFinish = () => {
-    // Save questions to history only when game is finished (prevents cheating)
-    const questionTexts = questions.map((q: Question) => q.question)
-    addToQuestionHistory(questionTexts)
-    setShowResults(true)
+  // Show loader while waiting for results audio
+  if (waitingForResults) {
+    return (
+      <LoadingView
+        title="Just Another Trivia"
+        message="Preparing your results..."
+        onBack={onBack}
+        showBackButton={true}
+      />
+    )
   }
 
   if (questionsLoading) {
@@ -165,6 +289,17 @@ function Game({ onBack, selectedTopics }: GameProps) {
     )
   }
 
+  // Show loader while first question's audio is loading
+  if (questions.length > 0 && !isAudioReady(questions[0].id)) {
+    return (
+      <LoadingView
+        title="Just Another Trivia"
+        message="Preparing first question..."
+        onBack={onBack}
+      />
+    )
+  }
+
   if (showResults) {
     return <Results onBack={onBack} score={score} totalQuestions={questions.length} resultsAudio={resultsAudio} />
   }
@@ -185,7 +320,7 @@ function Game({ onBack, selectedTopics }: GameProps) {
       </div>
       <div className="game-question-container">
         <h2 className="game-question">{currentQuestion.question}</h2>
-        <AudioPlayer audioData={currentQuestion.audio} className="question-audio" autoPlay={true} />
+        <AudioPlayer audioData={currentQuestionAudio?.audio || null} className="question-audio" autoPlay={true} />
       </div>
 
       <OptionsGrid
@@ -225,5 +360,3 @@ function Game({ onBack, selectedTopics }: GameProps) {
 }
 
 export default Game
-
-
