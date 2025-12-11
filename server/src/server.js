@@ -8,8 +8,6 @@ const cors = require('cors');
 const { getQuestions, getQuestionAudio, getResultsAudio } = require('./controllers/questionsController');
 const { getTopics } = require('./controllers/topicsController');
 const { checkAnswer } = require('./controllers/answersController');
-const { generateFeedbackAudio } = require('./controllers/feedbackController');
-const { generateGeneralAudio } = require('./controllers/audioController');
 
 const app = express();
 
@@ -21,8 +19,6 @@ app.get('/api/question-audio/:id', getQuestionAudio);
 app.get('/api/results-audio', getResultsAudio);
 app.get('/api/topics', getTopics);
 app.post('/api/check-answer', checkAnswer);
-app.post('/api/feedback-audio', generateFeedbackAudio);
-app.post('/api/general-audio', generateGeneralAudio);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
@@ -30,5 +26,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
-

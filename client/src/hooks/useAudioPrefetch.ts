@@ -14,7 +14,6 @@ interface AudioState {
 }
 
 interface UseAudioPrefetchReturn {
-  audioState: AudioState
   resultsAudio: Record<number, string>
   isAudioReady: (questionId: number) => boolean
   isResultsAudioReady: boolean
@@ -106,7 +105,6 @@ export function useAudioPrefetch(): UseAudioPrefetchReturn {
   }, [audioState])
 
   return {
-    audioState,
     resultsAudio,
     isAudioReady,
     isResultsAudioReady,

@@ -1,5 +1,4 @@
 import './LoadingView.css'
-import { useLoadingMessages } from '../hooks/useLoadingMessages'
 
 interface LoadingViewProps {
   title: string
@@ -7,19 +6,15 @@ interface LoadingViewProps {
   onBack?: () => void
   showBackButton?: boolean
   isError?: boolean
-  useCyclingMessages?: boolean
 }
 
 function LoadingView({ 
   title, 
-  message, 
+  message = "Loading questions...", 
   onBack, 
   showBackButton = false, 
-  isError = false,
-  useCyclingMessages = false 
+  isError = false
 }: LoadingViewProps) {
-  const cyclingMessage = useLoadingMessages(4000)
-  const displayMessage = useCyclingMessages && !isError ? cyclingMessage : message
 
   return (
     <div className="loading-container">
@@ -36,7 +31,7 @@ function LoadingView({
           </div>
         )}
         
-        <p className={`loading-message ${isError ? 'error' : ''}`}>{displayMessage}</p>
+        <p className={`loading-message ${isError ? 'error' : ''}`}>{message}</p>
         
         {!isError && (
           <div className="loading-dots">

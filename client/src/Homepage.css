@@ -36,103 +36,6 @@
   width: 100%;
 }
 
-
-/* Action Section */
-.action-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.helper-text {
-  margin: 0 0 1rem;
-  color: rgba(52, 152, 219, 0.6);
-  font-style: italic;
-  font-weight: 600;
-  min-height: 1.35rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.helper-text-error {
-  color: #ff6b6b;
-  margin-top: 8px;
-}
-
-.helper-text.visible {
-  opacity: 1;
-}
-
-.helper-text.hidden {
-  opacity: 0;
-}
-
-/* Buttons */
-.btn {
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  min-width: 180px;
-}
-
-.btn-primary {
-  background: rgb(46, 183, 204);
-  color: white;
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.6);
-}
-
-.btn-secondary {
-  background: rgb(23, 181, 175);
-  color: white;
-  box-shadow: 0 4px 15px rgba(23, 181, 175, 0.4);
-}
-
-.btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(46, 204, 113, 0.6);
-}
-
-.btn-disabled {
-  background: rgba(52, 152, 219, 0.1);
-  color: rgba(52, 152, 219, 0.5);
-  cursor: not-allowed;
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-}
-
-.btn-disabled:hover {
-  transform: none;
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-}
-
-/* Game Container */
-.game-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  color: rgb(52, 152, 219);
-  text-align: center;
-}
-
-.game-container h2 {
-  margin-bottom: 1rem;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .topics-section {
@@ -142,36 +45,15 @@
     justify-content: center;
     margin-bottom: 0;
   }
-  
+
   .topics-title {
     font-size: 1.5rem;
     margin: 0 0 2.5rem 0;
   }
-  
+
   .topics-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.6rem;
-  }
-  
-  
-  .action-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1rem;
-  }
-  
-  .helper-text {
-    min-height: 1.35rem;
-    font-size: 0.8rem;
-  }
-  
-  .btn {
-    max-width: 280px;
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
   }
 }
 
@@ -180,20 +62,13 @@
   .home-container {
     padding: 0.8rem;
   }
-  
+
   .topics-title {
     font-size: 1.3rem;
     margin: 0 0 2rem 0;
   }
-  
+
   .topics-grid {
     gap: 0.5rem;
-  }
-  
-  
-  .btn {
-    max-width: 260px;
-    padding: 0.7rem 1.2rem;
-    font-size: 0.9rem;
   }
 }

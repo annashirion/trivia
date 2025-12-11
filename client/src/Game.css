@@ -1,3 +1,19 @@
+/* Game Container */
+.game-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: rgb(52, 152, 219);
+  text-align: center;
+}
+
+.game-container h2 {
+  margin-bottom: 1rem;
+}
+
 .game-meta {
   margin-bottom: 8px;
   color: #8a8f98;
@@ -23,12 +39,9 @@
   display: none; /* Hide feedback audio UI - audio plays automatically */
 }
 
-
 .game-controls {
   margin-top: 16px;
   display: flex;
   gap: 8px;
   align-items: center;
 }
-
-

@@ -271,7 +271,6 @@ function Game({ onBack, selectedTopics }: GameProps) {
     return (
       <LoadingView
         title="Just Another Trivia"
-        useCyclingMessages={true}
         onBack={onBack}
       />
     )
