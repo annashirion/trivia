@@ -34,15 +34,6 @@ try {
     }
   }
 
-  console.log('Web API polyfills loaded successfully');
-  console.log('Available polyfills:', {
-    fetch: !!globalThis.fetch,
-    Headers: !!globalThis.Headers,
-    Request: !!globalThis.Request,
-    Response: !!globalThis.Response,
-    FormData: !!globalThis.FormData
-  });
-
 } catch (error) {
   console.error('Error loading polyfills:', error);
   // Continue without polyfills - some might be available natively

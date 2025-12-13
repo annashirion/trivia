@@ -58,7 +58,7 @@ export function useAudioManager() {
       try {
         await audioElement.play()
       } catch (error) {
-        console.log('Audio play failed:', error)
+        // Audio play failed
       }
     }
   }, [audioManager])

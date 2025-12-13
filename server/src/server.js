@@ -22,7 +22,7 @@ app.post('/api/check-answer', checkAnswer);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Trivia backend listening on port ${PORT}`);
+  // Server started
 });
 
 module.exports = app;

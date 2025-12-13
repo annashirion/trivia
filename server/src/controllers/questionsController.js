@@ -36,7 +36,6 @@ async function generateResultsAudio() {
       resultsAudio[i] = `data:audio/mpeg;base64,${audioBase64}`;
     }
 
-    console.log('Generated results audio for all scores (0-5)');
     return resultsAudio;
   } catch (error) {
     console.error('Error generating results audio:', error);
@@ -67,8 +66,6 @@ async function getQuestions(req, res) {
     if (selectedTopics.length === 0) {
       return res.status(400).json({ error: 'No valid topics found for the provided indexes' });
     }
-    
-    console.log(`Generating questions (without audio), avoiding ${previousQuestions.length} previous questions`);
     
     // Generate questions using OpenAI with topic data and previous questions
     const questions = await generateQuestions(selectedTopics, 5, previousQuestions);
@@ -121,8 +118,6 @@ async function getQuestionAudio(req, res) {
     if (!storedQuestion) {
       return res.status(404).json({ error: 'Question not found' });
     }
-    
-    console.log(`Generating audio for question ${questionId}`);
     
     // Create full text including question and options
     const fullText = `${storedQuestion.question} ${storedQuestion.options.join(', ')}`;
@@ -186,7 +181,6 @@ async function getQuestionAudio(req, res) {
  */
 async function getResultsAudio(req, res) {
   try {
-    console.log('Generating results audio for all scores');
     const resultsAudio = await generateResultsAudio();
     res.json({ resultsAudio });
   } catch (error) {
