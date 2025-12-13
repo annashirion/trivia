@@ -1,7 +1,7 @@
 import './App.css'
 import { useState, useEffect } from 'react'
-import Homepage from './Homepage'
-import Game from './Game'
+import Homepage from './components/Homepage'
+import Game from './components/Game'
 import type { Topic } from './types'
 import { API_BASE } from './utils/api'
 

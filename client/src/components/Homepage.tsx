@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import './Homepage.css'
-import ActionSection from './components/ActionSection'
-import TopicCard from './components/TopicCard'
-import LoadingView from './components/LoadingView'
-import type { Topic } from './types'
+import ActionSection from './ActionSection'
+import TopicCard from './TopicCard'
+import LoadingView from './LoadingView'
+import type { Topic } from '../types'
 
 interface HomepageProps {
   onStart: (topicIndexes: number[]) => void

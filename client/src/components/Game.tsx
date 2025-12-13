@@ -1,14 +1,14 @@
 import { useMemo, useState, useEffect, useCallback } from 'react'
 import './Game.css'
-import ActionSection from './components/ActionSection'
-import OptionsGrid from './components/OptionsGrid'
-import Results from './components/Results'
-import LoadingView from './components/LoadingView'
-import AudioPlayer from './components/AudioPlayer'
-import type { Question, AnswerCheck } from './types'
-import { API_BASE, getQuestionHistory, addToQuestionHistory } from './utils/api'
-import { useAudioManager } from './hooks/useAudioManager'
-import { useAudioPrefetch } from './hooks/useAudioPrefetch'
+import ActionSection from './ActionSection'
+import OptionsGrid from './OptionsGrid'
+import Results from './Results'
+import LoadingView from './LoadingView'
+import AudioPlayer from './AudioPlayer'
+import type { Question, AnswerCheck } from '../types'
+import { API_BASE, getQuestionHistory, addToQuestionHistory } from '../utils/api'
+import { useAudioManager } from '../hooks/useAudioManager'
+import { useAudioPrefetch } from '../hooks/useAudioPrefetch'
 
 interface GameProps {
   onBack: () => void
