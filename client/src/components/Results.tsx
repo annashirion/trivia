@@ -14,9 +14,8 @@ function Results({ onBack, score, totalQuestions, resultsAudio }: ResultsProps) 
 
   // Use pre-generated results audio
   useEffect(() => {
-    if (resultsAudio[score] !== undefined) {
-      setCurrentResultsAudio(resultsAudio[score])
-    }
+    const audio = resultsAudio[score]
+    setCurrentResultsAudio(audio || null)
   }, [score, resultsAudio])
 
   return (

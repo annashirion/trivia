@@ -9,9 +9,10 @@ const openai = new OpenAI({
  * Generate trivia questions using OpenAI API
  * @param {Object[]} topics - Array of topic objects with id, name, and description
  * @param {number} count - Number of questions to generate (default: 5)
+ * @param {string[]} previousQuestions - Array of previously asked questions to avoid (default: [])
  * @returns {Promise<Object[]>} Array of question objects
  */
-async function generateQuestions(topics, count = 5) {
+async function generateQuestions(topics, count = 5, previousQuestions = []) {
   try {
     // Create a detailed topics description for the prompt
     const topicsDescription = topics.map(topic => 
@@ -19,6 +20,17 @@ async function generateQuestions(topics, count = 5) {
     ).join('\n');
     
     const topicsString = topics.map(topic => topic.name).join(', ');
+    
+    // Build the previous questions section if there's history
+    let previousQuestionsSection = '';
+    if (previousQuestions.length > 0) {
+      previousQuestionsSection = `
+
+IMPORTANT - DO NOT repeat these questions that were already asked:
+${previousQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+
+Generate completely NEW and DIFFERENT questions that are NOT similar to the ones listed above.`;
+    }
     
     const prompt = `Generate ${count} trivia questions for the following topics:
 
@@ -46,7 +58,7 @@ Important:
 - Make sure the correctAnswer is the index (0-3) of the correct option
 - Ensure questions are diverse and interesting
 - Make sure all questions are appropriate for a general audience
-- Use the topic descriptions to create relevant and accurate questions`;
+- Use the topic descriptions to create relevant and accurate questions${previousQuestionsSection}`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",

@@ -12,7 +12,7 @@ function AudioPlayer({ audioData, className = '', autoPlay = false }: AudioPlaye
   const { audioRef, registerAudio, unregisterAudio, playAudio } = useAudioManager()
 
   const handleAudioError = () => {
-    console.log('Audio playback failed')
+    // Audio playback failed
   }
 
   // Register/unregister audio element
@@ -26,8 +26,8 @@ function AudioPlayer({ audioData, className = '', autoPlay = false }: AudioPlaye
   // Auto-play when audio data changes and autoPlay is enabled
   useEffect(() => {
     if (autoPlay && audioData && audioRef.current) {
-      playAudio(audioRef.current).catch((playError) => {
-        console.log('Autoplay blocked by browser:', playError)
+      playAudio(audioRef.current).catch(() => {
+        // Autoplay blocked by browser
       })
     }
   }, [audioData, autoPlay, playAudio])

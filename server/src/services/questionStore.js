@@ -53,10 +53,26 @@ function clearQuestions() {
   currentQuestions.clear();
 }
 
+/**
+ * Update audio data for a specific question
+ * @param {number} questionId - The question ID
+ * @param {string} audio - The question audio data
+ * @param {Object} feedbackAudio - The feedback audio data (correct/wrong)
+ */
+function updateQuestionAudio(questionId, audio, feedbackAudio) {
+  const question = currentQuestions.get(questionId);
+  if (question) {
+    question.audio = audio;
+    question.feedbackAudio = feedbackAudio;
+    currentQuestions.set(questionId, question);
+  }
+}
+
 module.exports = {
   storeQuestions,
   getCorrectAnswer,
   getQuestion,
   getAllQuestions,
-  clearQuestions
+  clearQuestions,
+  updateQuestionAudio
 };

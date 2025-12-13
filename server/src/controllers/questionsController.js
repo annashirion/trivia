@@ -1,5 +1,5 @@
 const { generateQuestions } = require('../services/openaiService');
-const { storeQuestions } = require('../services/questionStore');
+const { storeQuestions, getQuestion } = require('../services/questionStore');
 const { topics } = require('../data/topics');
 const OpenAI = require('openai');
 
@@ -36,7 +36,6 @@ async function generateResultsAudio() {
       resultsAudio[i] = `data:audio/mpeg;base64,${audioBase64}`;
     }
 
-    console.log('Generated results audio for all scores (0-5)');
     return resultsAudio;
   } catch (error) {
     console.error('Error generating results audio:', error);
@@ -44,23 +43,23 @@ async function generateResultsAudio() {
   }
 }
 
+/**
+ * Get questions without audio (fast initial load)
+ */
 async function getQuestions(req, res) {
   try {
-    const { topicIndexes } = req.query;
+    const { topicIndexes, previousQuestions = [] } = req.body;
     
-    if (!topicIndexes) {
-      return res.status(400).json({ error: 'Topic indexes parameter is required' });
+    if (!topicIndexes || !Array.isArray(topicIndexes)) {
+      return res.status(400).json({ error: 'Topic indexes array is required' });
     }
     
-    // Parse topic indexes from query string (can be comma-separated)
-    const selectedIndexes = topicIndexes.split(',').map(index => parseInt(index.trim()));
-    
-    if (selectedIndexes.length === 0 || selectedIndexes.some(index => isNaN(index))) {
+    if (topicIndexes.length === 0 || topicIndexes.some(index => typeof index !== 'number')) {
       return res.status(400).json({ error: 'Invalid topic indexes provided' });
     }
     
     // Map indexes to topic data
-    const selectedTopics = selectedIndexes
+    const selectedTopics = topicIndexes
       .filter(index => index >= 0 && index < topics.length)
       .map(index => topics[index]);
     
@@ -68,86 +67,32 @@ async function getQuestions(req, res) {
       return res.status(400).json({ error: 'No valid topics found for the provided indexes' });
     }
     
-    // Generate questions using OpenAI with topic data
-    const questions = await generateQuestions(selectedTopics, 5);
+    // Generate questions using OpenAI with topic data and previous questions
+    const questions = await generateQuestions(selectedTopics, 5, previousQuestions);
     
-    // Generate audio for each question (question + options + feedback audio)
-    const questionsWithAudio = await Promise.all(
-      questions.map(async (question) => {
-        try {
-          // Create full text including question and options
-          const fullText = `${question.question} ${question.options.join(', ')}`;
-          
-          const mp3 = await openai.audio.speech.create({
-            model: "tts-1",
-            voice: "alloy",
-            input: fullText,
-          });
-          
-          const audioBuffer = Buffer.from(await mp3.arrayBuffer());
-          const audioBase64 = audioBuffer.toString('base64');
-          
-          // Generate feedback audio for all possible answers
-          const correctAnswerText = question.options[question.correctAnswer];
-          const correctFeedbackText = `It's ${correctAnswerText}, you are right!`;
-          const wrongFeedbackText = `Unfortunately you are wrong. The correct answer was ${correctAnswerText}.`;
-          
-          // Generate correct answer audio
-          const correctMp3 = await openai.audio.speech.create({
-            model: "tts-1",
-            voice: "alloy",
-            input: correctFeedbackText,
-          });
-          const correctAudioBuffer = Buffer.from(await correctMp3.arrayBuffer());
-          const correctAudioBase64 = correctAudioBuffer.toString('base64');
-          
-          // Generate wrong answer audio
-          const wrongMp3 = await openai.audio.speech.create({
-            model: "tts-1",
-            voice: "alloy",
-            input: wrongFeedbackText,
-          });
-          const wrongAudioBuffer = Buffer.from(await wrongMp3.arrayBuffer());
-          const wrongAudioBase64 = wrongAudioBuffer.toString('base64');
-          
-          return {
-            id: question.id,
-            question: question.question,
-            options: question.options,
-            topic: question.topic,
-            correctAnswer: question.correctAnswer,
-            audio: `data:audio/mpeg;base64,${audioBase64}`,
-            feedbackAudio: {
-              correct: `data:audio/mpeg;base64,${correctAudioBase64}`,
-              wrong: `data:audio/mpeg;base64,${wrongAudioBase64}`
-            }
-          };
-        } catch (audioError) {
-          console.error(`Error generating audio for question ${question.id}:`, audioError);
-          // Return question without audio if audio generation fails
-          return {
-            id: question.id,
-            question: question.question,
-            options: question.options,
-            topic: question.topic,
-            correctAnswer: question.correctAnswer,
-            audio: null,
-            feedbackAudio: null
-          };
-        }
-      })
-    );
+    // Store questions for later (for answer checking and audio generation)
+    // We'll add audio/feedbackAudio as they're generated
+    const questionsForStore = questions.map(question => ({
+      id: question.id,
+      question: question.question,
+      options: question.options,
+      topic: question.topic,
+      correctAnswer: question.correctAnswer,
+      audio: null,
+      feedbackAudio: null
+    }));
     
-    // Generate results audio for all possible scores (0-5 out of 5)
-    const resultsAudio = await generateResultsAudio();
+    storeQuestions(questionsForStore);
     
-    // Store questions with audio for answer checking
-    storeQuestions(questionsWithAudio);
+    // Return only the fields needed by the frontend (exclude correctAnswer)
+    const questionsForClient = questions.map(({ id, question, options }) => ({
+      id,
+      question,
+      options
+    }));
     
-    // Return questions with results audio
     res.json({
-      questions: questionsWithAudio,
-      resultsAudio: resultsAudio
+      questions: questionsForClient
     });
     
   } catch (error) {
@@ -156,6 +101,92 @@ async function getQuestions(req, res) {
   }
 }
 
-module.exports = { getQuestions };
+/**
+ * Generate audio for a specific question by ID
+ */
+async function getQuestionAudio(req, res) {
+  try {
+    const questionId = parseInt(req.params.id);
+    
+    if (isNaN(questionId)) {
+      return res.status(400).json({ error: 'Invalid question ID' });
+    }
+    
+    // Get the stored question
+    const storedQuestion = getQuestion(questionId);
+    
+    if (!storedQuestion) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+    
+    // Create full text including question and options
+    const fullText = `${storedQuestion.question} ${storedQuestion.options.join(', ')}`;
+    
+    const mp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: fullText,
+    });
+    
+    const audioBuffer = Buffer.from(await mp3.arrayBuffer());
+    const audioBase64 = audioBuffer.toString('base64');
+    const audio = `data:audio/mpeg;base64,${audioBase64}`;
+    
+    // Generate feedback audio for correct and wrong answers
+    const correctAnswerText = storedQuestion.options[storedQuestion.correctAnswer];
+    const correctFeedbackText = `It's ${correctAnswerText}, you are right!`;
+    const wrongFeedbackText = `Unfortunately you are wrong. The correct answer was ${correctAnswerText}.`;
+    
+    // Generate correct answer audio
+    const correctMp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: correctFeedbackText,
+    });
+    const correctAudioBuffer = Buffer.from(await correctMp3.arrayBuffer());
+    const correctAudioBase64 = correctAudioBuffer.toString('base64');
+    
+    // Generate wrong answer audio
+    const wrongMp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: wrongFeedbackText,
+    });
+    const wrongAudioBuffer = Buffer.from(await wrongMp3.arrayBuffer());
+    const wrongAudioBase64 = wrongAudioBuffer.toString('base64');
+    
+    const feedbackAudio = {
+      correct: `data:audio/mpeg;base64,${correctAudioBase64}`,
+      wrong: `data:audio/mpeg;base64,${wrongAudioBase64}`
+    };
+    
+    // Update the stored question with the audio data
+    const { updateQuestionAudio } = require('../services/questionStore');
+    updateQuestionAudio(questionId, audio, feedbackAudio);
+    
+    res.json({
+      questionId,
+      audio,
+      feedbackAudio
+    });
+    
+  } catch (error) {
+    console.error('Error in getQuestionAudio:', error);
+    res.status(500).json({ error: 'Failed to generate question audio' });
+  }
+}
 
+/**
+ * Generate results audio for all possible scores
+ */
+async function getResultsAudio(req, res) {
+  try {
+    const resultsAudio = await generateResultsAudio();
+    res.json({ resultsAudio });
+  } catch (error) {
+    console.error('Error in getResultsAudio:', error);
+    res.status(500).json({ error: 'Failed to generate results audio' });
+  }
+}
 
+module.exports = { getQuestions, getQuestionAudio, getResultsAudio };
