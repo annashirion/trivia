@@ -187,7 +187,7 @@ function Game({ onBack, selectedTopics }: GameProps) {
         const feedback = result.isCorrect 
           ? questionAudio.feedbackAudio.correct 
           : questionAudio.feedbackAudio.wrong
-        setFeedbackAudio(feedback)
+        setFeedbackAudio(feedback || null)
       }
       
     } catch (e: unknown) {
