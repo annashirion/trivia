@@ -6,10 +6,11 @@ interface OptionsGridProps {
   selectedIndex: number | null
   correctIndex: number
   answered: boolean
+  checkingAnswer: boolean
   onSelect: (index: number) => void
 }
 
-function OptionsGrid({ options, selectedIndex, correctIndex, answered, onSelect }: OptionsGridProps) {
+function OptionsGrid({ options, selectedIndex, correctIndex, answered, checkingAnswer, onSelect }: OptionsGridProps) {
   return (
     <div className="options-grid">
       {options.map((option, idx) => {
@@ -26,6 +27,7 @@ function OptionsGrid({ options, selectedIndex, correctIndex, answered, onSelect 
             isCorrect={isCorrect}
             showState={showState}
             answered={answered}
+            checkingAnswer={checkingAnswer}
             onSelect={onSelect}
           />
         )

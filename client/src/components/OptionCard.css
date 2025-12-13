@@ -43,3 +43,8 @@
   background: #ffecec;
   border: 1px solid #ff6b6b;
 }
+
+.option-card.checking {
+  background: #f0f4ff;
+  border: 1px solid #3498db
+}

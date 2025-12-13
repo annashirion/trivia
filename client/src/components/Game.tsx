@@ -326,7 +326,8 @@ function Game({ onBack, selectedTopics }: GameProps) {
         options={currentQuestion.options}
         selectedIndex={selectedIndex}
         correctIndex={answerResult?.correctIndex ?? -1}
-        answered={answered || checkingAnswer}
+        answered={answered}
+        checkingAnswer={checkingAnswer}
         onSelect={handleSelect}
       />
 

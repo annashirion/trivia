@@ -26,7 +26,11 @@ See [server/README.md](./server/README.md) for detailed setup instructions.
 - Multiple topic selection
 - Dynamic question generation
 - Real-time answer checking
-- Audio feedback
+- Audio questions and feedback
 - Question history tracking (localStorage)
 - Responsive design
 
+## 🔮 Future Improvements
+
+- **Reducing user loading screen time** - Improve question preloading, caching strategies, and optimistic UI updates to minimize wait times
+- **Enhanced user experience** - Add animations, transitions, and improved visual feedback for better interactivity
