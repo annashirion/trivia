@@ -4,7 +4,7 @@ A dynamic trivia game application with AI-generated questions powered by OpenAI.
 
 ## 🚀 Production
 
-**Live Application:** [just-another-trivia.up.railway.app](https://just-another-trivia.up.railway.app)
+**Live Application:** [https://just-another-trivia.up.railway.app](https://just-another-trivia.up.railway.app)
 
 ## 📁 Project Structure
 
