@@ -38,8 +38,8 @@ ${topicsDescription}
 
 For each question, provide:
 - A clear, interesting question
-- 4 multiple choice options (A, B, C, D)
-- The correct answer (A, B, C, or D)
+- 4 multiple choice options formatted with letter-number prefixes: "A. ", "B. ", "C. ", "D. "
+- The correct answer must be randomly placed in one of the four positions (A, B, C, or D)
 - The topic ID it belongs to
 
 Return the response as a JSON array with this exact structure:
@@ -47,7 +47,7 @@ Return the response as a JSON array with this exact structure:
   {
     "id": 1,
     "question": "Your question here?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "options": ["A. Option text", "B. Option text", "C. Option text", "D. Option text"],
     "topic": "topic_id",
     "correctAnswer": 0
   }
@@ -55,7 +55,9 @@ Return the response as a JSON array with this exact structure:
 
 Important:
 - Use the topic IDs exactly as provided: ${topics.map(t => t.id).join(', ')}
-- Make sure the correctAnswer is the index (0-3) of the correct option
+- Each option MUST start with the letter-number prefix: "A. ", "B. ", "C. ", or "D. " followed by the option text
+- The correctAnswer is the index (0-3) of the correct option in the array
+- CRITICAL: Randomize the position of the correct answer for each question - do not always put it in the same position (A/0). Vary it across A, B, C, and D positions
 - Ensure questions are diverse and interesting
 - Make sure all questions are appropriate for a general audience
 - Use the topic descriptions to create relevant and accurate questions${previousQuestionsSection}`;
