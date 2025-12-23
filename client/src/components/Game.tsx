@@ -19,6 +19,7 @@ function Game({ onBack, selectedTopics }: GameProps) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [questionsLoading, setQuestionsLoading] = useState(true)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
+  const [isRetrying, setIsRetrying] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [answered, setAnswered] = useState(false)
@@ -45,8 +46,12 @@ function Game({ onBack, selectedTopics }: GameProps) {
   useEffect(() => {
     let isCancelled = false
 
-    const fetchQuestions = async () => {
+    const fetchQuestions = async (isRetry = false) => {
       try {
+        if (isRetry && !isCancelled) {
+          setIsRetrying(true)
+        }
+        
         const previousQuestions = getQuestionHistory()
         
         const res = await fetch(`${API_BASE}/api/questions`, {
@@ -60,20 +65,32 @@ function Game({ onBack, selectedTopics }: GameProps) {
           })
         })
         
-        if (!res.ok) throw new Error('Failed to fetch questions')
+        if (!res.ok) {
+          // If first attempt failed, retry once
+          if (!isRetry) {
+            return await fetchQuestions(true)
+          }
+          throw new Error('Failed to fetch questions')
+        }
+        
         const data = await res.json()
 
         // Only update state if the effect hasn't been cancelled
         if (!isCancelled) {
           setQuestions(data.questions)
+          setIsRetrying(false)
+          setQuestionsLoading(false)
         }
       } catch (e: unknown) {
+        // If first attempt failed with an error, retry once
+        if (!isRetry && !isCancelled) {
+          return await fetchQuestions(true)
+        }
+        
         if (!isCancelled) {
           const message = e instanceof Error ? e.message : 'Unknown error'
           setQuestionsError(message)
-        }
-      } finally {
-        if (!isCancelled) {
+          setIsRetrying(false)
           setQuestionsLoading(false)
         }
       }
@@ -271,6 +288,7 @@ function Game({ onBack, selectedTopics }: GameProps) {
     return (
       <LoadingView
         title="Just Another Trivia"
+        message={isRetrying ? "Retrying question generation..." : undefined}
         onBack={onBack}
       />
     )

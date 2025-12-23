@@ -68,7 +68,21 @@ async function getQuestions(req, res) {
     }
     
     // Generate questions using OpenAI with topic data and previous questions
-    const questions = await generateQuestions(selectedTopics, 5, previousQuestions);
+    // Retry once if generation fails
+    let questions;
+    let retryAttempted = false;
+    
+    try {
+      questions = await generateQuestions(selectedTopics, 5, previousQuestions);
+    } catch (error) {
+      // Retry once
+      try {
+        retryAttempted = true;
+        questions = await generateQuestions(selectedTopics, 5, previousQuestions);
+      } catch (retryError) {
+        throw retryError;
+      }
+    }
     
     // Store questions for later (for answer checking and audio generation)
     // We'll add audio/feedbackAudio as they're generated
@@ -92,7 +106,8 @@ async function getQuestions(req, res) {
     }));
     
     res.json({
-      questions: questionsForClient
+      questions: questionsForClient,
+      retryAttempted: retryAttempted
     });
     
   } catch (error) {
