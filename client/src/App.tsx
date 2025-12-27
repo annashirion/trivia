@@ -13,8 +13,6 @@ function App() {
   const [topicsError, setTopicsError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (topics.length > 0) return // Don't fetch if we already have topics
-
     const fetchTopics = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/topics`)
@@ -29,7 +27,7 @@ function App() {
       }
     }
     fetchTopics()
-  }, [topics.length])
+  }, [])
 
   const handleStart = (topicIndexes: number[]) => {
     setSelectedTopics(topicIndexes)
